@@ -2,12 +2,13 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ArrowUp, ChevronDown, Menu, Plus, Square, Trash2, X, KeyRound, Folder } from "lucide-react";
+import { ArrowUp, ChevronDown, Menu, Plus, Square, Trash2, X, KeyRound, Folder, UserRound } from "lucide-react";
 import logo from "@/assets/neola-logo.png";
 import {
   PROVIDERS,
   type ProviderId,
   type Msg,
+  type Persona,
   createSession,
   deleteSession,
   exportData,
@@ -26,6 +27,7 @@ const COMMANDS: [string, string][] = [
   ["/provider <id>", "switch provider (mistral, muse, groq, openrouter)"],
   ["/key <provider> <key>", "save an API key on this device"],
   ["/keys", "open key settings"],
+  ["/persona", "personalize Neola"],
   ["/baseurl <provider> <url>", "override a provider endpoint"],
   ["/new", "start a new session"],
   ["/sessions", "open session list"],
@@ -47,6 +49,7 @@ export function Terminal({ sessionId }: { sessionId: string }) {
   const [drawer, setDrawer] = useState(false);
   const [keysOpen, setKeysOpen] = useState(false);
   const [modelOpen, setModelOpen] = useState(false);
+  const [personaOpen, setPersonaOpen] = useState(false);
   const [histIdx, setHistIdx] = useState(-1);
   const abortRef = useRef<AbortController | null>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -124,6 +127,9 @@ export function Terminal({ sessionId }: { sessionId: string }) {
         setState((x) => ({ ...x, keys: { ...x.keys, [p as ProviderId]: k } }));
         return sys(`key saved for ${PROVIDERS[p as ProviderId].label} (stored on this device only)`);
       }
+      case "/persona":
+      case "/personalize":
+        return setPersonaOpen(true);
       case "/keys":
         return setKeysOpen(true);
       case "/baseurl": {
@@ -236,6 +242,9 @@ export function Terminal({ sessionId }: { sessionId: string }) {
             {session.project ? `~/${session.project}` : "~"} · {PROVIDERS[session.provider].label}
           </div>
         </div>
+        <button aria-label="Personalize" onClick={() => setPersonaOpen(true)} className="rounded-md p-2 text-muted-foreground active:bg-muted">
+          <UserRound className="size-5" />
+        </button>
         <button aria-label="API keys" onClick={() => setKeysOpen(true)} className="rounded-md p-2 text-muted-foreground active:bg-muted">
           <KeyRound className="size-5" />
         </button>
@@ -247,7 +256,7 @@ export function Terminal({ sessionId }: { sessionId: string }) {
           <div className="flex h-full flex-col items-center justify-center gap-4 select-none">
             <div className="ghost-logo text-[22vw] leading-none font-bold">neola</div>
             <p className="text-center text-xs text-muted-foreground">
-              {hasKey ? "type a prompt, or / for commands" : `no key for ${PROVIDERS[session.provider].label} · tap the key icon`}
+              {hasKey ? `hi${st.persona.userName ? " " + st.persona.userName : ""}! chat with me, or / for commands` : `no key for ${PROVIDERS[session.provider].label} · tap the key icon`}
             </p>
           </div>
         ) : (
@@ -334,6 +343,7 @@ export function Terminal({ sessionId }: { sessionId: string }) {
       </div>
 
       {drawer && <SessionsDrawer currentId={sessionId} onClose={() => setDrawer(false)} onNew={goNew} />}
+      {personaOpen && <PersonaSheet onClose={() => setPersonaOpen(false)} />}
       {keysOpen && <KeysSheet onClose={() => setKeysOpen(false)} />}
       {modelOpen && (
         <ModelSheet
@@ -389,6 +399,17 @@ function Sheet({ title, onClose, children }: { title: string; onClose: () => voi
 
 function KeysSheet({ onClose }: { onClose: () => void }) {
   const st = useNeola();
+  const [keys, setKeys] = useState<Partial<Record<ProviderId, string>>>({ ...st.keys });
+  const [urls, setUrls] = useState<Partial<Record<ProviderId, string>>>({ ...st.baseUrls });
+  const [show, setShow] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const save = () => {
+    const clean = (o: Partial<Record<ProviderId, string>>) =>
+      Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v?.trim() || undefined]).filter(([, v]) => v));
+    setState((x) => ({ ...x, keys: clean(keys), baseUrls: clean(urls) }));
+    setSaved(true);
+    setTimeout(onClose, 600);
+  };
   return (
     <Sheet title="API keys" onClose={onClose}>
       <p className="mb-4 text-[11px] text-muted-foreground">Keys stay on this phone and are sent only to the provider you use.</p>
@@ -400,22 +421,73 @@ function KeysSheet({ onClose }: { onClose: () => void }) {
               {st.keys[p] && <span className="text-primary">● saved</span>}
             </label>
             <input
-              type="password"
+              type={show ? "text" : "password"}
               autoComplete="off"
-              defaultValue={st.keys[p] ?? ""}
+              value={keys[p] ?? ""}
               placeholder="paste key"
-              onBlur={(e) => setState((x) => ({ ...x, keys: { ...x.keys, [p]: e.target.value.trim() || undefined } }))}
+              onChange={(e) => setKeys((k) => ({ ...k, [p]: e.target.value }))}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-[16px] outline-none focus:border-primary"
             />
             <input
-              defaultValue={st.baseUrls[p] ?? ""}
+              value={urls[p] ?? ""}
               placeholder={PROVIDERS[p].baseUrl}
-              onBlur={(e) => setState((x) => ({ ...x, baseUrls: { ...x.baseUrls, [p]: e.target.value.trim() || undefined } }))}
+              onChange={(e) => setUrls((k) => ({ ...k, [p]: e.target.value }))}
               className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-1.5 text-[12px] text-muted-foreground outline-none focus:border-primary"
             />
           </div>
         ))}
       </div>
+      <label className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+        <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} className="accent-primary" /> show keys
+      </label>
+      <button onClick={save} className="mt-4 w-full rounded-lg bg-primary py-3 text-sm font-bold text-primary-foreground">
+        {saved ? "saved ✓" : "save keys"}
+      </button>
+    </Sheet>
+  );
+}
+
+const STYLE_OPTS: [Persona["style"], string][] = [
+  ["friendly", "warm teammate"],
+  ["concise", "short & direct"],
+  ["teacher", "explains why"],
+  ["hacker", "witty terminal vibe"],
+];
+
+function PersonaSheet({ onClose }: { onClose: () => void }) {
+  const st = useNeola();
+  const [p, setP] = useState<Persona>({ ...st.persona });
+  const field = "w-full rounded-lg border border-input bg-background px-3 py-2 text-[16px] outline-none focus:border-primary";
+  return (
+    <Sheet title="Personalize Neola" onClose={onClose}>
+      <div className="space-y-4">
+        <div>
+          <label className="mb-1 block text-xs">Your name</label>
+          <input value={p.userName} onChange={(e) => setP({ ...p, userName: e.target.value })} placeholder="what should Neola call you?" className={field} />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs">Personality</label>
+          <div className="grid grid-cols-2 gap-2">
+            {STYLE_OPTS.map(([id, d]) => (
+              <button key={id} onClick={() => setP({ ...p, style: id })} className={`rounded-lg border px-3 py-2 text-left text-xs ${p.style === id ? "border-primary text-primary" : "border-border text-muted-foreground"}`}>
+                <div className="font-bold">{id}</div>
+                <div className="text-[10px] opacity-80">{d}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs">Favorite languages / stack</label>
+          <input value={p.stack} onChange={(e) => setP({ ...p, stack: e.target.value })} placeholder="e.g. TypeScript, React, Python" className={field} />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs">Custom instructions</label>
+          <textarea rows={4} value={p.instructions} onChange={(e) => setP({ ...p, instructions: e.target.value })} placeholder="anything Neola should always keep in mind" className={field + " resize-none"} />
+        </div>
+      </div>
+      <button onClick={() => { setState((x) => ({ ...x, persona: p })); onClose(); }} className="mt-4 w-full rounded-lg bg-primary py-3 text-sm font-bold text-primary-foreground">
+        save
+      </button>
     </Sheet>
   );
 }
