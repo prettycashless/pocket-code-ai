@@ -80,6 +80,7 @@ export function Terminal({ sessionId }: { sessionId: string }) {
   };
 
   async function runCommand(raw: string) {
+    if (!session) return;
     const [cmd, ...rest] = raw.trim().split(/\s+/);
     const arg = rest.join(" ");
     switch (cmd) {
@@ -120,7 +121,7 @@ export function Terminal({ sessionId }: { sessionId: string }) {
       case "/key": {
         const [p, k] = rest;
         if (!PIDS.includes(p as ProviderId) || !k) return sys("usage: /key <provider> <key>", true);
-        setState((x) => ({ ...x, keys: { ...x.keys, [p]: k } }));
+        setState((x) => ({ ...x, keys: { ...x.keys, [p as ProviderId]: k } }));
         return sys(`key saved for ${PROVIDERS[p as ProviderId].label} (stored on this device only)`);
       }
       case "/keys":
@@ -128,7 +129,7 @@ export function Terminal({ sessionId }: { sessionId: string }) {
       case "/baseurl": {
         const [p, u] = rest;
         if (!PIDS.includes(p as ProviderId)) return sys("usage: /baseurl <provider> <url>", true);
-        setState((x) => ({ ...x, baseUrls: { ...x.baseUrls, [p]: u || undefined } }));
+        setState((x) => ({ ...x, baseUrls: { ...x.baseUrls, [p as ProviderId]: u || undefined } }));
         return sys(u ? `endpoint for ${p} → ${u}` : `endpoint for ${p} reset`);
       }
       case "/new":
@@ -166,6 +167,7 @@ export function Terminal({ sessionId }: { sessionId: string }) {
   }
 
   async function submit() {
+    if (!session) return;
     const text = input.trim();
     if (!text || busy) return;
     setInput("");
@@ -294,7 +296,7 @@ export function Terminal({ sessionId }: { sessionId: string }) {
                 e.preventDefault();
                 const i = histIdx - 1;
                 setHistIdx(i);
-                setInput(i >= 0 ? st.history[i] : "");
+                setInput(i >= 0 ? (st.history[i] ?? "") : "");
               }
             }}
             placeholder="Ask anything, / for commands…"
