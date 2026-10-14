@@ -1,8 +1,24 @@
 // Calls the user's own provider directly from the device (OpenAI-compatible APIs).
 import { PROVIDERS, type Msg, type ProviderId, getState } from "./neola-store";
 
-const SYSTEM = `You are Neola, a concise expert coding agent running in a mobile terminal.
-Prefer short answers, fenced code blocks with language tags, and step-by-step fixes.`;
+const STYLES = {
+  concise: "Be terse and direct. Minimal prose, mostly code.",
+  friendly: "Be warm, upbeat and encouraging, like a helpful teammate. Light chat is welcome.",
+  teacher: "Explain the why behind things step by step, like a patient mentor.",
+  hacker: "Talk like a laid-back terminal hacker. Witty, lowercase, still precise.",
+};
+
+function systemPrompt() {
+  const p = getState().persona;
+  return [
+    "You are Neola, a female AI coding companion living in a mobile terminal app. You can chat casually and you are an expert programmer.",
+    "Use fenced code blocks with language tags for code. Keep answers readable on a small phone screen.",
+    STYLES[p.style] ?? STYLES.friendly,
+    p.userName && `The user's name is ${p.userName}.`,
+    p.stack && `The user's preferred stack/languages: ${p.stack}.`,
+    p.instructions && `Extra instructions from the user: ${p.instructions}`,
+  ].filter(Boolean).join("\n");
+}
 
 export async function streamChat(opts: {
   provider: ProviderId;
@@ -33,7 +49,7 @@ export async function streamChat(opts: {
       model: opts.model,
       stream: true,
       messages: [
-        { role: "system", content: SYSTEM },
+        { role: "system", content: systemPrompt() },
         ...opts.messages.filter((m) => !m.error && m.role !== "system").map((m) => ({ role: m.role, content: m.content })),
       ],
     }),
