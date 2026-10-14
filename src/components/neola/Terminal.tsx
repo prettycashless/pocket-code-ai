@@ -495,6 +495,17 @@ function PersonaSheet({ onClose }: { onClose: () => void }) {
           </div>
         </div>
         <div>
+          <label className="mb-1 block text-xs">Reply length</label>
+          <div className="grid grid-cols-3 gap-2">
+            {VERBOSITY_OPTS.map(([id, d]) => (
+              <button key={id} onClick={() => setP({ ...p, verbosity: id })} className={`rounded-lg border px-3 py-2 text-left text-xs ${p.verbosity === id ? "border-primary text-primary" : "border-border text-muted-foreground"}`}>
+                <div className="font-bold">{id}</div>
+                <div className="text-[10px] opacity-80">{d}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
           <label className="mb-1 block text-xs">Favorite languages / stack</label>
           <input value={p.stack} onChange={(e) => setP({ ...p, stack: e.target.value })} placeholder="e.g. TypeScript, React, Python" className={field} />
         </div>
