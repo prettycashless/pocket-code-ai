@@ -44,6 +44,14 @@ export interface NeolaState {
   projects: string[];
   history: string[];
   sessions: Session[];
+  persona: Persona;
+}
+
+export interface Persona {
+  userName: string;
+  style: "concise" | "friendly" | "teacher" | "hacker";
+  stack: string;
+  instructions: string;
 }
 
 const KEY = "neola:v1";
@@ -55,6 +63,7 @@ const empty: NeolaState = {
   projects: [],
   history: [],
   sessions: [],
+  persona: { userName: "", style: "friendly", stack: "", instructions: "" },
 };
 
 let state: NeolaState = empty;
@@ -66,7 +75,7 @@ function load() {
   loaded = true;
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) state = { ...empty, ...JSON.parse(raw) };
+    if (raw) { const j = JSON.parse(raw); state = { ...empty, ...j, persona: { ...empty.persona, ...(j.persona ?? {}) } }; }
   } catch {
     /* ignore corrupt data */
   }
