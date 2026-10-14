@@ -2,18 +2,29 @@
 import { PROVIDERS, type Msg, type ProviderId, getState } from "./neola-store";
 
 const STYLES = {
+  serious: "Be straightforward, neutral and professional. Get to the point. No flattery, no filler, no small talk unless the user starts it.",
   concise: "Be terse and direct. Minimal prose, mostly code.",
-  friendly: "Be warm, upbeat and encouraging, like a helpful teammate. Light chat is welcome.",
   teacher: "Explain the why behind things step by step, like a patient mentor.",
-  hacker: "Talk like a laid-back terminal hacker. Witty, lowercase, still precise.",
+  friendly: "Be warm and encouraging, like a helpful teammate. Light chat is welcome.",
+};
+
+const VERBOSITY = {
+  short: "Keep replies very short. Answer in a few sentences or just code.",
+  normal: "Keep replies reasonably brief, readable on a small phone screen.",
+  detailed: "Give thorough, complete answers when the topic needs it.",
 };
 
 function systemPrompt() {
   const p = getState().persona;
+  const name = p.neolaName.trim() || "Neola";
   return [
-    "You are Neola, a female AI coding companion living in a mobile terminal app. You can chat casually and you are an expert programmer.",
-    "Use fenced code blocks with language tags for code. Keep answers readable on a small phone screen.",
-    STYLES[p.style] ?? STYLES.friendly,
+    `You are ${name}, a female AI coding companion living in a mobile terminal app. You can chat and you are an expert programmer.`,
+    "Never use emojis or emoticons in your replies.",
+    "Use fenced code blocks with language tags for code.",
+    STYLES[p.style] ?? STYLES.serious,
+    VERBOSITY[p.verbosity] ?? VERBOSITY.normal,
+    p.role && `Your role/identity: ${p.role}.`,
+    p.expertise && `Your areas of expertise: ${p.expertise}.`,
     p.userName && `The user's name is ${p.userName}.`,
     p.stack && `The user's preferred stack/languages: ${p.stack}.`,
     p.instructions && `Extra instructions from the user: ${p.instructions}`,

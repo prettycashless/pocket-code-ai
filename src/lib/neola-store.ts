@@ -49,7 +49,11 @@ export interface NeolaState {
 
 export interface Persona {
   userName: string;
-  style: "concise" | "friendly" | "teacher" | "hacker";
+  neolaName: string;
+  style: "serious" | "concise" | "teacher" | "friendly";
+  role: string;
+  expertise: string;
+  verbosity: "short" | "normal" | "detailed";
   stack: string;
   instructions: string;
 }
@@ -63,7 +67,7 @@ const empty: NeolaState = {
   projects: [],
   history: [],
   sessions: [],
-  persona: { userName: "", style: "friendly", stack: "", instructions: "" },
+  persona: { userName: "", neolaName: "Neola", style: "serious", role: "", expertise: "", verbosity: "normal", stack: "", instructions: "" },
 };
 
 let state: NeolaState = empty;

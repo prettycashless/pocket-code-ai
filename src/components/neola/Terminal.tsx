@@ -448,10 +448,16 @@ function KeysSheet({ onClose }: { onClose: () => void }) {
 }
 
 const STYLE_OPTS: [Persona["style"], string][] = [
-  ["friendly", "warm teammate"],
+  ["serious", "straightforward & neutral"],
   ["concise", "short & direct"],
   ["teacher", "explains why"],
-  ["hacker", "witty terminal vibe"],
+  ["friendly", "warm teammate"],
+];
+
+const VERBOSITY_OPTS: [Persona["verbosity"], string][] = [
+  ["short", "few sentences"],
+  ["normal", "balanced"],
+  ["detailed", "thorough"],
 ];
 
 function PersonaSheet({ onClose }: { onClose: () => void }) {
@@ -463,13 +469,36 @@ function PersonaSheet({ onClose }: { onClose: () => void }) {
       <div className="space-y-4">
         <div>
           <label className="mb-1 block text-xs">Your name</label>
-          <input value={p.userName} onChange={(e) => setP({ ...p, userName: e.target.value })} placeholder="what should Neola call you?" className={field} />
+          <input value={p.userName} onChange={(e) => setP({ ...p, userName: e.target.value })} placeholder="what should she call you?" className={field} />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs">Her name</label>
+          <input value={p.neolaName} onChange={(e) => setP({ ...p, neolaName: e.target.value })} placeholder="Neola" className={field} />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs">Who she is</label>
+          <input value={p.role} onChange={(e) => setP({ ...p, role: e.target.value })} placeholder="e.g. senior backend engineer, security researcher" className={field} />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs">Her expertise</label>
+          <input value={p.expertise} onChange={(e) => setP({ ...p, expertise: e.target.value })} placeholder="e.g. distributed systems, mobile apps, devops" className={field} />
         </div>
         <div>
           <label className="mb-1 block text-xs">Personality</label>
           <div className="grid grid-cols-2 gap-2">
             {STYLE_OPTS.map(([id, d]) => (
               <button key={id} onClick={() => setP({ ...p, style: id })} className={`rounded-lg border px-3 py-2 text-left text-xs ${p.style === id ? "border-primary text-primary" : "border-border text-muted-foreground"}`}>
+                <div className="font-bold">{id}</div>
+                <div className="text-[10px] opacity-80">{d}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs">Reply length</label>
+          <div className="grid grid-cols-3 gap-2">
+            {VERBOSITY_OPTS.map(([id, d]) => (
+              <button key={id} onClick={() => setP({ ...p, verbosity: id })} className={`rounded-lg border px-3 py-2 text-left text-xs ${p.verbosity === id ? "border-primary text-primary" : "border-border text-muted-foreground"}`}>
                 <div className="font-bold">{id}</div>
                 <div className="text-[10px] opacity-80">{d}</div>
               </button>
