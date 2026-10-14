@@ -469,7 +469,19 @@ function PersonaSheet({ onClose }: { onClose: () => void }) {
       <div className="space-y-4">
         <div>
           <label className="mb-1 block text-xs">Your name</label>
-          <input value={p.userName} onChange={(e) => setP({ ...p, userName: e.target.value })} placeholder="what should Neola call you?" className={field} />
+          <input value={p.userName} onChange={(e) => setP({ ...p, userName: e.target.value })} placeholder="what should she call you?" className={field} />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs">Her name</label>
+          <input value={p.neolaName} onChange={(e) => setP({ ...p, neolaName: e.target.value })} placeholder="Neola" className={field} />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs">Who she is</label>
+          <input value={p.role} onChange={(e) => setP({ ...p, role: e.target.value })} placeholder="e.g. senior backend engineer, security researcher" className={field} />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs">Her expertise</label>
+          <input value={p.expertise} onChange={(e) => setP({ ...p, expertise: e.target.value })} placeholder="e.g. distributed systems, mobile apps, devops" className={field} />
         </div>
         <div>
           <label className="mb-1 block text-xs">Personality</label>
