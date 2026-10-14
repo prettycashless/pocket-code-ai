@@ -215,7 +215,7 @@ export function Terminal({ sessionId }: { sessionId: string }) {
   }
 
   const suggestions = input.startsWith("/") && !input.includes(" ")
-    ? COMMANDS.filter(([c]) => c.startsWith(input.split(" ")[0])).slice(0, 6)
+    ? COMMANDS.filter(([c]) => c.startsWith(input.split(" ")[0] ?? "")).slice(0, 6)
     : [];
   const hasKey = !!st.keys[session.provider];
   const empty = session.messages.length === 0;
@@ -266,7 +266,7 @@ export function Terminal({ sessionId }: { sessionId: string }) {
               <button
                 key={c}
                 onClick={() => {
-                  setInput(c.split(" ")[0] + (c.includes(" ") ? " " : ""));
+                  setInput((c.split(" ")[0] ?? "") + (c.includes(" ") ? " " : ""));
                   taRef.current?.focus();
                 }}
                 className="flex w-full items-baseline gap-2 px-3 py-2 text-left text-xs active:bg-muted"

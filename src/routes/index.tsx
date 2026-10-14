@@ -20,7 +20,7 @@ function Index() {
   const navigate = useNavigate();
   useEffect(() => {
     const s = getState().sessions;
-    const id = s.length ? [...s].sort((a, b) => b.updatedAt - a.updatedAt)[0].id : createSession();
+    const id = s.length ? [...s].sort((a, b) => b.updatedAt - a.updatedAt)[0]!.id : createSession();
     navigate({ to: "/s/$sessionId", params: { sessionId: id }, replace: true });
   }, [navigate]);
   return <div className="min-h-dvh bg-background" />;
