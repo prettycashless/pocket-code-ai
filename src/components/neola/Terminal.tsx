@@ -448,10 +448,16 @@ function KeysSheet({ onClose }: { onClose: () => void }) {
 }
 
 const STYLE_OPTS: [Persona["style"], string][] = [
-  ["friendly", "warm teammate"],
+  ["serious", "straightforward & neutral"],
   ["concise", "short & direct"],
   ["teacher", "explains why"],
-  ["hacker", "witty terminal vibe"],
+  ["friendly", "warm teammate"],
+];
+
+const VERBOSITY_OPTS: [Persona["verbosity"], string][] = [
+  ["short", "few sentences"],
+  ["normal", "balanced"],
+  ["detailed", "thorough"],
 ];
 
 function PersonaSheet({ onClose }: { onClose: () => void }) {
